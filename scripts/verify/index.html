@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><body><script>
+const { ipcRenderer } = require('electron');
+(async () => {
+  try {
+    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    const [track] = stream.getAudioTracks();
+    if (!track) return ipcRenderer.send('result', { ok:false, reason:'no_audio_track' });
+
+    const ctx = new AudioContext();
+    const an = ctx.createAnalyser(); an.fftSize = 2048;
+    ctx.createMediaStreamSource(new MediaStream([track])).connect(an);
+    const buf = new Float32Array(an.fftSize);
+    let peak = 0, n = 0;
+
+    const iv = setInterval(() => {
+      an.getFloatTimeDomainData(buf);
+      let s = 0; for (const v of buf) s += v*v;
+      peak = Math.max(peak, Math.sqrt(s/buf.length));
+      if (++n >= 60) {   // ~12 seconds
+        clearInterval(iv);
+        ipcRenderer.send('result', {
+          ok: peak > 0.0001, peak: Number(peak.toFixed(6)),
+          label: track.label, rate: ctx.sampleRate,
+          reason: peak > 0.0001 ? 'audio_flowing' : 'silent_track',
+        });
+      }
+    }, 200);
+  } catch (e) {
+    ipcRenderer.send('result', { ok:false, reason:'exception', message:e.message });
+  }
+})();
+</script></body></html>

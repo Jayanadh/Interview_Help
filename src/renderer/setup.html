@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Help_Interview — Setup</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #16181d; --muted: #6b7280;
+    --line: #e4e6eb; --field: #f7f8fa; --accent: #2f6df6;
+    --ok-bg: #e9f7ef; --ok-fg: #17663a;
+    --err-bg: #fdecec; --err-fg: #a62020;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d; --fg: #e8eaed; --muted: #9aa1ab;
+      --line: #2c3038; --field: #1e2128; --accent: #6b9bff;
+      --ok-bg: #12301f; --ok-fg: #7ee0a5;
+      --err-bg: #34191a; --err-fg: #ff9b9b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 36px 44px;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: var(--bg); color: var(--fg);
+  }
+  h1 { font-size: 21px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+  label { display: block; font-weight: 600; margin: 0 0 6px; font-size: 13px; }
+  .hint { font-weight: 400; color: var(--muted); }
+  input[type=text], textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--field); color: var(--fg);
+    font: inherit; outline: none;
+  }
+  input[type=text]:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 78px; }
+  .field { margin-bottom: 18px; }
+  .row { display: flex; gap: 14px; }
+  .row .field { flex: 1; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--field); color: var(--fg);
+    padding: 9px 16px;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+    width: 100%; padding: 12px; font-size: 15px; margin-top: 6px;
+  }
+  button.primary:disabled { opacity: .45; cursor: not-allowed; }
+  .banner {
+    padding: 10px 13px; border-radius: 8px; font-size: 13px;
+    margin-bottom: 20px; white-space: pre-wrap;
+  }
+  .banner.ok  { background: var(--ok-bg);  color: var(--ok-fg); }
+  .banner.err { background: var(--err-bg); color: var(--err-fg); }
+  .resume-row { display: flex; align-items: center; gap: 12px; }
+  .resume-status { color: var(--muted); font-size: 13px; }
+  .resume-status.loaded { color: var(--ok-fg); font-weight: 600; }
+  .keys { color: var(--muted); font-size: 12px; margin-top: 18px; line-height: 1.8; }
+  kbd {
+    background: var(--field); border: 1px solid var(--line); border-radius: 4px;
+    padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+  <h1>Help_Interview</h1>
+  <p class="sub">Answer four questions, load your resume, and the overlay does the rest.</p>
+
+  <div id="provider" class="banner">Checking your API key…</div>
+
+  <div class="banner err" id="permBanner" style="display:none">
+    <strong>Screen Recording permission needed.</strong><br />
+    macOS provides system audio through screen recording, and it is also how
+    <em>Solve screen</em> reads your screen. You only have to do this once.
+    <div id="permSteps" style="margin-top:8px;display:none">
+      System Settings → Privacy &amp; Security → Screen Recording → switch on
+      <strong id="permAppName">Help Interview</strong>, then restart.<br />
+      <span style="opacity:.8">macOS only offers the popup once, so after the
+      first refusal this toggle is the only way.</span>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+      <button id="grantBtn">Grant permission</button>
+      <button id="settingsBtn" style="display:none">Open Settings</button>
+      <button id="relaunchBtn" style="display:none">Restart app</button>
+    </div>
+  </div>
+
+  <div class="field" id="keyField" style="display:none">
+    <label for="apikey">API key <span class="hint">— stored on this Mac only, never sent anywhere but the provider</span></label>
+    <div class="resume-row">
+      <input type="password" id="apikey" placeholder="gsk_… (Groq)  ·  sk-ant-… (Claude)  ·  sk-… (OpenAI)" style="flex:1" />
+      <button id="saveKey">Save</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Resume <span class="hint">— PDF, TXT, or Markdown</span></label>
+    <div class="resume-row">
+      <button id="pick">Choose file…</button>
+      <span id="resumeStatus" class="resume-status">No file selected</span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="role">Role you're interviewing for</label>
+      <input type="text" id="role" placeholder="Senior Backend Engineer" />
+    </div>
+    <div class="field">
+      <label for="company">Company</label>
+      <input type="text" id="company" placeholder="Stripe" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="jd">Job description <span class="hint">— optional, but makes answers much sharper</span></label>
+    <textarea id="jd" placeholder="Paste the posting here. This also pushes your context over the prompt-cache minimum, which makes every answer faster and cheaper."></textarea>
+  </div>
+
+  <div class="field">
+    <label for="focus">Anything to emphasise? <span class="hint">— optional</span></label>
+    <textarea id="focus" placeholder="Lean on my payments work. Avoid the gap in 2023. I'm weaker on frontend, keep those answers short."></textarea>
+  </div>
+
+  <button class="primary" id="start" disabled>Start listening</button>
+
+  <div class="keys">
+    <strong>Once running:</strong><br />
+    <kbd>⌘/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Space</kbd> &nbsp;answer now (manual trigger)<br />
+    <kbd>⌘/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> &nbsp;hide / show the overlay<br />
+    <kbd>⌘/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>⏎</kbd> &nbsp;read the screen and write code<br />
+    <kbd>⌘/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>X</kbd> &nbsp;clear the panel
+  </div>
+
+  <script src="setup.js"></script>
+</body>
+</html>

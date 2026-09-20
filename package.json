@@ -1,0 +1,82 @@
+{
+  "name": "help-interview",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Real-time interview copilot: live transcription + context-aware answer suggestions.",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "spike": "electron scripts/audio-spike",
+    "postinstall": "node scripts/patch-plist.js",
+    "build": "electron-builder --mac --dir",
+    "build:win": "electron-builder --win --dir",
+    "cert": "bash scripts/make-signing-cert.sh",
+    "test:ui": "electron scripts/selftest/ui.js",
+    "test:vision": "electron scripts/selftest/vision.js",
+    "test:audio": "node scripts/selftest/audio.js",
+    "cert:trust": "bash scripts/trust-signing-cert.sh",
+    "test:routing": "node scripts/selftest/routing.js",
+    "test:anthropic": "node scripts/selftest/anthropic-shape.js",
+    "test:perms": "electron scripts/selftest/perms.js",
+    "test:windows": "node scripts/selftest/windows.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "dotenv": "^17.0.0",
+    "pdf-parse": "^1.1.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.jayanadh.helpinterview",
+    "productName": "Help Interview",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": "sample-resume.txt",
+        "to": "sample-resume.txt"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "identity": "Help Interview Self Signed",
+      "extendInfo": {
+        "NSAudioCaptureUsageDescription": "Help Interview captures system audio so it can transcribe the conversation.",
+        "NSMicrophoneUsageDescription": "Help Interview uses your microphone to transcribe what you say.",
+        "NSScreenCaptureDescription": "Help Interview needs screen recording access because that is how macOS provides system audio.",
+        "LSUIElement": false
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+JAYANADH KONERU
+Backend Engineer — 5 years
+
+ACME PAYMENTS (2022–2026) — Senior Backend Engineer
+- Built payment ingestion pipeline in Go handling 40,000 TPS on Kafka
+- Designed idempotency layer with Redis + Postgres advisory locks;
+  cut duplicate charges from 0.3% to 0.001%
+- Led migration of 12 monolith services to gRPC; p99 latency 420ms -> 260ms
+- On-call lead for the ledger service; drove MTTR from 45min to 9min
+
+NIMBUS DATA (2021–2022) — Backend Engineer
+- Built CDC pipeline with Debezium syncing 200M rows/day into Snowflake
+- Wrote the retry/backoff library adopted across 30+ internal services
+
+EDUCATION
+B.Tech, Computer Science
+
+SKILLS
+Go, Python, Postgres, Kafka, Redis, gRPC, Kubernetes, Terraform, AWS

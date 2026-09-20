@@ -1,0 +1,55 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+ body{margin:0;font:15px/1.6 -apple-system,system-ui,sans-serif;background:#fff;color:#1a1a1a;display:flex;height:100vh}
+ .nav{background:#f7f7f7;border-bottom:1px solid #ddd;padding:10px 18px;font-size:13px;color:#666;position:fixed;top:0;left:0;right:0;z-index:2}
+ .cols{display:flex;width:100%;padding-top:40px}
+ .left{width:46%;padding:24px 28px;overflow:auto;border-right:1px solid #e3e3e3}
+ .right{flex:1;background:#1e1e1e;color:#d4d4d4;padding:20px 24px;font:13.5px/1.7 Menlo,monospace}
+ h2{font-size:20px;margin:0 0 6px}
+ .tag{display:inline-block;background:#fff3cd;color:#8a6d3b;font-size:11px;padding:2px 9px;border-radius:10px;margin-bottom:14px}
+ pre{background:#f4f4f4;padding:11px 14px;border-radius:6px;font:13px/1.55 Menlo,monospace;white-space:pre-wrap}
+ .cons li{margin:3px 0;font-size:14px}
+ code{background:#eee;padding:1px 4px;border-radius:3px;font-family:Menlo,monospace}
+ .kw{color:#569cd6}.fn{color:#dcdcaa}.cm{color:#6a9955}.ty{color:#4ec9b0}
+</style></head><body>
+<div class="nav">◀ Problem List &nbsp;|&nbsp; 1249. Minimum Remove to Make Valid Parentheses &nbsp;·&nbsp; ⏱ 24:13 &nbsp;·&nbsp; Run · Submit</div>
+<div class="cols">
+<div class="left">
+  <h2>1249. Minimum Remove to Make Valid Parentheses</h2>
+  <div class="tag">Medium</div>
+  <p>Given a string <code>s</code> of <code>'('</code>, <code>')'</code> and lowercase English
+  characters.</p>
+  <p>Your task is to remove the minimum number of parentheses
+  (<code>'('</code> or <code>')'</code>, in any positions) so that the resulting
+  <em>parentheses string</em> is valid and return <strong>any</strong> valid string.</p>
+  <p>Formally, a parentheses string is valid if and only if:</p>
+  <ul class="cons">
+    <li>It is the empty string, contains only lowercase characters, or</li>
+    <li>It can be written as <code>AB</code> (A concatenated with B), where A and B are valid strings, or</li>
+    <li>It can be written as <code>(A)</code>, where A is a valid string.</li>
+  </ul>
+  <p><strong>Example 1:</strong></p>
+  <pre>Input:  s = "lee(t(c)o)de)"
+Output: "lee(t(c)o)de"
+Explanation: "lee(t(co)de)", "lee(t(c)ode)" would also be accepted.</pre>
+  <p><strong>Example 2:</strong></p>
+  <pre>Input:  s = "a)b(c)d"
+Output: "ab(c)d"</pre>
+  <p><strong>Example 3:</strong></p>
+  <pre>Input:  s = "))(("
+Output: ""
+Explanation: An empty string is also valid.</pre>
+  <p><strong>Constraints:</strong></p>
+  <ul class="cons">
+    <li><code>1 &lt;= s.length &lt;= 10^5</code></li>
+    <li><code>s[i]</code> is either <code>'('</code>, <code>')'</code>, or lowercase English letter.</li>
+  </ul>
+</div>
+<div class="right">
+<div><span class="cm">// your solution here</span></div><br>
+<div><span class="kw">class</span> <span class="ty">Solution</span> {</div>
+<div>&nbsp;&nbsp;<span class="kw">public</span>: </div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="ty">string</span> <span class="fn">minRemoveToMakeValid</span>(<span class="ty">string</span> s) {</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;}</div>
+<div>};</div>
+</div></div></body></html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Audio Spike</title>
+<style>
+ body{font:14px/1.6 -apple-system,system-ui,sans-serif;padding:26px;background:#16181d;color:#e8eaed}
+ button{font:inherit;font-weight:600;padding:10px 18px;border-radius:8px;border:0;background:#2f6df6;color:#fff;cursor:pointer}
+ pre{background:#1e2128;padding:15px;border-radius:9px;margin-top:18px;font-size:13px;line-height:1.7;white-space:pre-wrap}
+ .bar{height:22px;background:#1e2128;border-radius:5px;overflow:hidden;margin-top:14px}
+ .fill{height:100%;width:0;background:linear-gradient(90deg,#6fdba0,#ffc866);transition:width .1s}
+ .verdict{font-size:17px;font-weight:700;margin-top:16px}
+ .good{color:#6fdba0}.bad{color:#ff8f8f}
+</style></head><body>
+<h2 style="margin:0 0 6px">System audio capture test</h2>
+<p style="color:#99a0ab;margin:0 0 20px">Start capture, then play any audio on this machine. The bar must move.</p>
+<button id="go">Start capture</button>
+<div class="bar"><div class="fill" id="fill"></div></div>
+<div class="verdict" id="verdict"></div>
+<pre id="out">idle</pre>
+<script>
+const out=document.getElementById('out'),fill=document.getElementById('fill'),verdict=document.getElementById('verdict');
+document.getElementById('go').onclick=async()=>{
+ try{
+  out.textContent='requesting getDisplayMedia…';
+  const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+  const [track]=stream.getAudioTracks();
+  if(!track){out.textContent='FAIL: stream has no audio track at all.\n\nOn macOS this means loopback was never granted.';verdict.textContent='✗ no audio track';verdict.className='verdict bad';return;}
+  const ctx=new AudioContext();
+  const an=ctx.createAnalyser(); an.fftSize=2048;
+  ctx.createMediaStreamSource(new MediaStream([track])).connect(an);
+  const buf=new Float32Array(an.fftSize); let peak=0,frames=0;
+  setInterval(()=>{
+   an.getFloatTimeDomainData(buf);
+   let s=0; for(const v of buf) s+=v*v;
+   const rms=Math.sqrt(s/buf.length); peak=Math.max(peak,rms); frames++;
+   fill.style.width=Math.min(100,rms*900)+'%';
+   out.textContent='track label : '+track.label+'\ntrack state : '+track.readyState
+     +'\nsample rate : '+ctx.sampleRate+' Hz'+'\nrms         : '+rms.toFixed(5)
+     +'\npeak        : '+peak.toFixed(5)+'\nframes      : '+frames;
+   if(peak>0.0001){verdict.textContent='✓ AUDIO FLOWING — capture works';verdict.className='verdict good';}
+   else if(frames>60){verdict.textContent='✗ DEAD STREAM — track is valid but silent';verdict.className='verdict bad';}
+  },200);
+ }catch(e){out.textContent='ERROR: '+e.message;verdict.textContent='✗ '+e.name;verdict.className='verdict bad';}
+};
+</script></body></html>
