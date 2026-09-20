@@ -41,28 +41,113 @@ from screen sharing or attempt to evade proctoring software.
 
 ## Quick start
 
-You need **Node.js 18 or newer** and one API key.
+Five minutes, start to finish.
+
+### 1. Install Node.js 18 or newer
+
+Check what you have:
+
+```bash
+node --version
+```
+
+If that errors or shows below v18, install it from
+[nodejs.org](https://nodejs.org) (take the LTS build).
+
+### 2. Get an API key
+
+Go to **[console.groq.com/keys](https://console.groq.com/keys)**, sign in,
+and create a key. It starts with `gsk_`. Groq has a free tier, and it is both
+the cheapest and the fastest option here.
+
+(Other providers work too — see [Choosing your API keys](#choosing-your-api-keys).)
+
+### 3. Get the code
 
 ```bash
 git clone https://github.com/Jayanadh/Interview_Help.git
 cd Interview_Help
 npm install
+```
+
+`npm install` downloads Electron, which is around 270 MB, so give it a
+minute or two.
+
+### 4. Add your key
+
+**macOS / Linux:**
+```bash
 cp .env.example .env
 ```
 
-Open `.env`, paste a key next to `GROQ_API_KEY=` (free, and the fastest —
-get one at [console.groq.com/keys](https://console.groq.com/keys)), then:
+**Windows (PowerShell):**
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` in any text editor and put your key after the `=`:
+
+```
+GROQ_API_KEY=gsk_your_key_here
+```
+
+Save it. Nothing else in that file needs changing.
+
+### 5. Run it
 
 ```bash
 npm start
 ```
 
-On macOS you'll be asked for Screen Recording and Microphone access. Grant
-both and **restart the app** — see [First-run permissions](#first-run-permissions).
-On Windows there's nothing to grant.
+**On macOS**, the first launch asks for Screen Recording and Microphone
+access. Grant both, then **quit and reopen the app** — macOS does not apply a
+fresh screen-recording grant to a process that is already running, so nothing
+works until you restart. If you miss the popup, see
+[First-run permissions](#first-run-permissions); macOS only offers it once.
 
-In the setup window: choose your resume, type the role and company, press
-**Start listening**. The overlay appears and starts answering.
+**On Windows** there is nothing to grant.
+
+### 6. Set up your session
+
+In the window that opens:
+
+1. **Choose file…** and pick your resume — PDF, TXT, or Markdown.
+2. Type the **role** and **company** you're interviewing for.
+3. Optionally paste the **job description** (this makes answers noticeably
+   sharper, and on Claude it also makes them cheaper).
+4. Press **Start listening**.
+
+A dark overlay panel appears. It floats above everything and is draggable by
+its header.
+
+### 7. Check it's actually working
+
+The banner at the top of the overlay should be green and read
+**"Listening — Groq Whisper + Groq LLM"**.
+
+Now test it without needing a real interviewer. Open
+[text-to-speech.online](https://text-to-speech.online/en/) in a browser, type
+*"Tell me about a time you solved a hard problem"*, and play it. Within about
+a second the overlay should stream an answer built from your resume.
+
+If the banner is red, or stays green but nothing ever appears, go to
+[Troubleshooting](#troubleshooting).
+
+### 8. Try the screen solver
+
+Open any coding problem — a LeetCode page, a shared editor, a PDF — and press:
+
+| | |
+|---|---|
+| macOS | `⌘` + `Shift` + `Enter` |
+| Windows | `Ctrl` + `Shift` + `Enter` |
+
+or click **Solve screen** in the overlay toolbar.
+
+It screenshots your display, reads the problem, and writes a full solution.
+Change the language in the **Code in** box first if you don't want Python —
+type `cpp`, `golang`, `rust`, anything; it matches to the nearest of 236
+languages and shows you what it settled on.
 
 ---
 
