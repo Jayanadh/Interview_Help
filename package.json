@@ -20,7 +20,8 @@
     "test:perms": "electron scripts/selftest/perms.js",
     "test:windows": "node scripts/selftest/windows.js",
     "build:win:arm": "electron-builder --win --arm64 --dir",
-    "smoke": "electron scripts/selftest/smoke.js"
+    "smoke": "electron scripts/selftest/smoke.js",
+    "test:watchdog": "electron scripts/selftest/watchdog.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0",

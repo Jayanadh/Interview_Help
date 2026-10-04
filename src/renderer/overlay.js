@@ -275,7 +275,11 @@ function setScale(next) {
 }
 
 // ── Wire up ─────────────────────────────────────────────────────────
-window.api.on('status', ({ level, message }) => setStatus(level, message));
+window.api.on('status', ({ level, message }) => {
+  setStatus(level, message);
+  // Sound arriving again means the problem is gone — take the notice down.
+  if (level === 'ok' && /listening/i.test(message)) $('dead').className = 'dead';
+});
 window.api.on('transcript', renderTranscript);
 window.api.on('clear', clearAnswer);
 
@@ -294,6 +298,19 @@ window.api.on('answer-start', ({ question, kind }) => {
 });
 
 window.api.on('scale', ({ delta }) => setScale(scale + delta));
+
+// The app has worked out that nothing is reaching it. Say so where it will
+// actually be seen, and put the fix one click away — this fires mid-session,
+// when the setup window is long gone.
+window.api.on('audio-dead', ({ message, detail, canFix }) => {
+  $('deadTitle').textContent = message;
+  $('deadDetail').textContent = detail;
+  $('deadActs').style.display = canFix ? '' : 'none';
+  $('dead').className = 'dead show';
+});
+
+$('deadSettings').addEventListener('click', () => window.api.openScreenSettings());
+$('deadRestart').addEventListener('click', () => window.api.relaunch());
 
 window.api.on('answer-ttft', ({ ms }) => {
   ttftEl.textContent = `${ms}ms`;

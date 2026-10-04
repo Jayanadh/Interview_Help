@@ -103,6 +103,8 @@ const state = {
   // Language the screen-solver writes in. Set from the overlay, mid-interview.
   language: TUNING.defaultLanguage,
   solving: false,
+  // Silent-capture watchdog. See checkAudioHealth().
+  audio: null,
 };
 
 // ── System audio capture ────────────────────────────────────────────
@@ -197,6 +199,61 @@ function toOverlay(channel, payload) {
   }
 }
 
+/**
+ * Watches for the failure that has no error.
+ *
+ * When a screen-recording grant goes away — revoked, or reset by a macOS
+ * upgrade — the capture does not fail. getDisplayMedia still succeeds, a
+ * perfectly valid audio track is still delivered, and it carries pure
+ * silence, forever, with nothing logged anywhere. The app sits there saying
+ * "Listening" and never answers, and there is no way to tell that from an
+ * interviewer who simply has not spoken yet.
+ *
+ * So: notice that no sound has *ever* arrived, and say so.
+ */
+const AUDIO_GRACE_MS = 45000;   // generous — people do sit in silence
+const SILENCE_FLOOR = 180;      // peak amplitude below this is not speech
+
+/** Cheap peak check. Samples every 32nd frame; enough to spot true silence. */
+function hasSound(buf) {
+  for (let i = 0; i + 1 < buf.length; i += 64) {
+    if (Math.abs(buf.readInt16LE(i)) > SILENCE_FLOOR) return true;
+  }
+  return false;
+}
+
+function checkAudioHealth() {
+  const a = state.audio;
+  if (!a || a.warned || !state.running) return;
+  if (Date.now() - a.startedAt < AUDIO_GRACE_MS) return;
+  if (a.loud > 0) return; // sound has arrived at some point; nothing to say
+
+  a.warned = true;
+
+  const noStream = a.chunks === 0;
+  const mac = process.platform === 'darwin';
+
+  log('AUDIO-WATCHDOG', noStream ? 'no chunks at all' : `${a.chunks} chunks, all silent`);
+
+  toOverlay('audio-dead', {
+    canFix: mac,
+    message: noStream
+      ? 'No audio is reaching the app at all — the capture never started.'
+      : 'Audio is arriving but it is completely silent, which is what a ' +
+        'revoked Screen Recording grant looks like.',
+    detail: mac
+      ? 'macOS resets this permission on major OS updates, so it can vanish ' +
+        'without you touching anything. Switch it back on, then restart.'
+      : 'Check that something is actually playing, and that the app can see ' +
+        'a display to capture.',
+  });
+
+  toOverlay('status', {
+    level: 'error',
+    message: noStream ? 'No audio reaching the app' : 'Audio is silent — permission likely reset',
+  });
+}
+
 // ── Session lifecycle ───────────────────────────────────────────────
 function startSession() {
   const { stt } = state.providers;
@@ -231,6 +288,9 @@ function startSession() {
   state.sttThem.connect();
   state.sttMe.connect();
   state.running = true;
+
+  state.audio = { startedAt: Date.now(), chunks: 0, loud: 0, warned: false, timer: null };
+  state.audio.timer = setInterval(checkAudioHealth, 5000);
 
   toOverlay('status', {
     level: 'ok',
@@ -370,6 +430,8 @@ async function handleSolveScreen({ hint } = {}) {
 }
 
 function stopSession() {
+  if (state.audio?.timer) clearInterval(state.audio.timer);
+  state.audio = null;
   state.abort?.abort();
   state.abort = null;
   state.sttThem?.close();
@@ -458,6 +520,15 @@ function installIpc() {
   ipcMain.on('audio-chunk', (_e, { channel, data }) => {
     if (!state.running) return;
     const buf = Buffer.from(data);
+
+    // Only the interviewer's channel counts. Your own microphone working
+    // says nothing about whether system audio is being captured, and that
+    // is the half that breaks.
+    if (channel === 'them' && state.audio) {
+      state.audio.chunks++;
+      if (hasSound(buf)) state.audio.loud++;
+    }
+
     if (channel === 'them') state.sttThem?.send(buf);
     else state.sttMe?.send(buf);
   });

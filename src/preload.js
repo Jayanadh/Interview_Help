@@ -37,7 +37,7 @@ contextBridge.exposeInMainWorld('api', {
     const allowed = new Set([
       'transcript', 'answer-start', 'answer-token', 'answer-done',
       'answer-ttft', 'answer-cancelled', 'status', 'clear', 'scale',
-      'solve-screen',
+      'solve-screen', 'audio-dead',
     ]);
     if (!allowed.has(channel)) return () => {};
     const wrapped = (_e, payload) => handler(payload);

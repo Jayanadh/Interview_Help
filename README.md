@@ -389,10 +389,44 @@ Windows needs none of this.
 
 ## Troubleshooting
 
+### Permission keeps coming back after a macOS update
+
+This is the one thing you cannot fully prevent. macOS resets Screen Recording
+grants on major OS upgrades — and from Sequoia onwards it also re-checks
+periodically for apps that are not signed with a paid Apple Developer ID.
+Nothing in the app can stop that; Apple treats screen capture as a permission
+worth re-confirming.
+
+What *is* fixed:
+
+| Cause | Status |
+|---|---|
+| Rebuilding the app | **Solved** — `npm run cert:trust`, then the identity is stable |
+| Moving or reinstalling the app | **Solved** — same certificate |
+| Major macOS upgrade | Cannot be prevented. The app detects it and offers the fix in one click. |
+| Periodic re-check (Sequoia+) | Needs a paid Apple Developer ID and notarization |
+
+**If you need it to truly never prompt again**, that means a $99/year Apple
+Developer account: set `hardenedRuntime: true` in `package.json`, sign with
+"Developer ID Application", and notarize. That is the only configuration
+Apple treats as fully trusted.
+
+Short of that, the app makes the recovery as short as possible: it notices
+the moment audio goes silent, says what happened, and puts the settings pane
+and a restart one click away — see below.
+
 ### "Listening" but the transcript stays empty
 
 Two failure modes produce a *valid* audio track carrying *pure silence*, with
-no error anywhere. Run the diagnostic:
+no error anywhere.
+
+**The app now catches this itself.** If no sound has arrived 45 seconds into
+a session, a notice appears across the top of the overlay naming the likely
+cause, with buttons to open the Screen Recording pane and to restart. It
+clears itself the moment audio returns. You do not have to notice that it has
+been quiet for suspiciously long.
+
+To investigate by hand, run the diagnostic:
 
 ```bash
 npm run spike
@@ -445,6 +479,7 @@ npm run test:routing    # every combination of keys, and what each one should do
 npm run test:anthropic  # proves the Claude request shape is valid without a Claude key
 npm run test:perms      # the permission banner in all four states
 npm run test:windows    # checks nothing macOS-only sits on the Windows path
+npm run test:watchdog   # the silent-capture detector and the notice it raises
 npm run smoke           # does THIS machine have everything? run it anywhere
 ```
 
