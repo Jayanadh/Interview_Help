@@ -224,9 +224,17 @@ that cannot work, showing the manual steps instead.
 
 ### Windows
 
-Nothing to grant. Loopback audio needs no permission, screen capture needs no
-permission, and the microphone prompt appears on first use. The permission
-banner never shows.
+**Nothing to grant.** Loopback audio needs no permission, screen capture needs
+no permission, and the microphone prompt appears on first use, raised by
+Chromium at the moment it is needed. The permission banner never appears, and
+none of the macOS restart dance applies.
+
+If anything does go wrong, run the smoke test — it checks every requirement
+on the machine it runs on and tells you which one failed:
+
+```bash
+npm run smoke
+```
 
 ---
 
@@ -334,8 +342,23 @@ On Claude, `ANSWER_MODE=fast` uses Haiku instead of Opus — quicker and cheaper
 ## Building a standalone app
 
 ```bash
-npm run build      # macOS  → dist/mac-arm64/
-npm run build:win  # Windows → dist/win-unpacked/
+npm run build          # macOS, Apple Silicon → dist/mac-arm64/
+npm run build:win      # Windows x64         → dist/win-unpacked/
+npm run build:win:arm  # Windows on ARM      → dist/win-arm64-unpacked/
+```
+
+**Pick the Windows architecture deliberately.** `--win` on its own builds for
+whatever the *host* machine is, so building on an Apple Silicon Mac silently
+produces an **arm64** Windows binary that will not start on an ordinary x64
+PC. `build:win` pins `--x64`, which is what almost every Windows machine
+needs; use `build:win:arm` only for ARM devices like a Surface Pro X.
+
+Verify before you hand it to anyone:
+
+```bash
+file "dist/win-unpacked/Help Interview.exe"
+#  want: PE32+ executable (GUI) x86-64
+#  not:  PE32+ executable (GUI) Aarch64
 ```
 
 ### macOS: do this first, or permissions will keep disappearing
@@ -422,7 +445,13 @@ npm run test:routing    # every combination of keys, and what each one should do
 npm run test:anthropic  # proves the Claude request shape is valid without a Claude key
 npm run test:perms      # the permission banner in all four states
 npm run test:windows    # checks nothing macOS-only sits on the Windows path
+npm run smoke           # does THIS machine have everything? run it anywhere
 ```
+
+`npm run smoke` is the one to reach for on a machine the app has never run on.
+It checks keys and routing, that every module loads, displays, a real screen
+grab, the audio path, all five global shortcuts, and that the overlay window
+builds with its toolbar intact — then prints exactly what failed, if anything.
 
 `test:vision` and `test:audio` spend real API calls; the rest are free.
 `test:ui` writes screenshots to `scripts/selftest/shots/`.

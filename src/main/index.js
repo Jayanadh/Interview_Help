@@ -166,6 +166,11 @@ function createOverlayWindow() {
     y: Math.round(workArea.y + (workArea.height - height) / 2),
     frame: false,
     transparent: true,
+    // Windows needs the alpha stated explicitly. Without it a transparent
+    // frameless window renders as an opaque black rectangle on a good number
+    // of GPU/driver combinations, which looks like a crashed app rather than
+    // a styling bug. Harmless on macOS.
+    backgroundColor: '#00000000',
     resizable: true,
     alwaysOnTop: true,
     skipTaskbar: true,
@@ -539,8 +544,11 @@ function installIpc() {
       appName: app.isPackaged ? app.getName() : 'Electron',
       canPrompt: screen === 'not-determined',
       // A grant only takes effect in a process started after it, so if we
-      // have ever seen it granted and now do not, a restart is all that is
-      // missing — not another trip to System Settings.
+      // have ever seen it granted and now do not, a restart is probably all
+      // that is missing. Only *probably*: an OS upgrade or someone flipping
+      // the toggle back off also lands here, and then restarting changes
+      // nothing. Boot clears this claim after one failed restart so that
+      // case falls through to the real instructions instead of looping.
       needsRestart: screen !== 'granted' && loadSettings().screenGranted === true,
     };
   });
@@ -577,6 +585,9 @@ function installIpc() {
   });
 
   ipcMain.handle('relaunch', () => {
+    // Mark the attempt so the next boot can tell "restart fixes it" from
+    // "restarting will never fix it".
+    saveSettings({ restartedForPermission: true });
     log('relaunching to apply permissions');
     app.relaunch();
     app.exit(0);
@@ -652,6 +663,20 @@ app.whenReady().then(() => {
   const saved = loadSettings();
   if (saved.CODE_LANGUAGE) state.language = matchLanguage(saved.CODE_LANGUAGE).name;
   log('code language:', state.language);
+
+  // Settle the permission claim before any window asks about it.
+  if (saved.restartedForPermission) {
+    if (mediaStatus('screen') === 'granted') {
+      saveSettings({ restartedForPermission: false });
+      log('permission restart worked');
+    } else {
+      // We restarted for this and still do not have it, so the remembered
+      // grant is stale — an OS upgrade or a revoked toggle. Forget it, or
+      // the banner offers Restart forever and never the one thing that works.
+      saveSettings({ restartedForPermission: false, screenGranted: false });
+      log('permission restart did not help — clearing the stale grant claim');
+    }
+  }
 
   installDisplayMediaHandler();
   installIpc();

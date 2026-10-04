@@ -129,7 +129,8 @@ async function checkPermissions() {
 
   const st = await window.api.screenStatus();
   const banner = $('permBanner');
-  const title = banner.querySelector('strong');
+  const title = $('permTitle');
+  const why = $('permWhy');
   const grant = $('grantBtn');
   const settings = $('settingsBtn');
   const restart = $('relaunchBtn');
@@ -146,21 +147,34 @@ async function checkPermissions() {
 
   if (st.canPrompt) {
     // macOS has never asked. One click and it will.
+    banner.className = 'banner err';
     title.textContent = 'Screen Recording permission needed.';
+    why.innerHTML = 'macOS provides system audio through screen recording, and ' +
+      'it is also how <em>Solve screen</em> reads your screen. You only have to ' +
+      'do this once.';
     steps.style.display = 'none';
     grant.style.display = '';
     settings.style.display = 'none';
     restart.style.display = 'none';
   } else if (st.needsRestart) {
-    // Already granted at some point — this process just predates it.
-    title.textContent = 'Permission granted. Restart to pick it up.';
+    // Already granted at some point — this process just predates it. Nothing
+    // is broken, so this is amber rather than red.
+    banner.className = 'banner warn';
+    title.textContent = 'Almost there — restart to pick up the permission.';
+    why.textContent =
+      'macOS only hands a screen-recording grant to processes started after ' +
+      'it was given, so this one cannot see it yet. One restart and you are done.';
     steps.style.display = 'none';
     grant.style.display = 'none';
     settings.style.display = 'none';
     restart.style.display = '';
   } else {
-    // Refused once. macOS will not ask again, ever, so the button is a lie.
+    // Refused once, or revoked. macOS will not ask again, ever, so a Grant
+    // button here would be a lie.
+    banner.className = 'banner err';
     title.textContent = 'Turn on Screen Recording, then restart.';
+    why.innerHTML = 'macOS provides system audio through screen recording, and ' +
+      'it is also how <em>Solve screen</em> reads your screen.';
     steps.style.display = '';
     grant.style.display = 'none';
     settings.style.display = '';

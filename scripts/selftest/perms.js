@@ -85,9 +85,21 @@ app.whenReady().then(async () => {
   await setState({ screen: 'denied', mic: 'granted', appName: 'Help Interview',
                    canPrompt: false, needsRestart: true });
   check('says restart, not "go and grant it again"',
-    /restart/i.test(await text('permBanner')) && !(await shown('settingsBtn')),
-    (await js(`document.querySelector('#permBanner strong').textContent`)));
+    /restart/i.test(await text('permTitle')) && !(await shown('settingsBtn')),
+    await text('permTitle'));
   check('Restart is the only button', await shown('relaunchBtn'));
+  check('styled as a nudge, not an error',
+    (await js(`document.getElementById('permBanner').className`)) === 'banner warn',
+    await js(`document.getElementById('permBanner').className`));
+  check('body text matches the headline (no stale "do this once")',
+    !/only have to do this once/i.test(await text('permWhy')),
+    (await text('permWhy')).slice(0, 60) + '…');
+
+  console.log('\n5b. denied is still styled as an error');
+  await setState({ screen: 'denied', mic: 'granted', appName: 'Help Interview',
+                   canPrompt: false, needsRestart: false });
+  check('error styling for a real problem',
+    (await js(`document.getElementById('permBanner').className`)) === 'banner err');
 
   console.log('\n6. back to granted — banner must disappear again');
   await setState({ screen: 'granted', mic: 'granted', appName: 'Help Interview',

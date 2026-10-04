@@ -9,7 +9,7 @@
     "spike": "electron scripts/audio-spike",
     "postinstall": "node scripts/patch-plist.js",
     "build": "electron-builder --mac --dir",
-    "build:win": "electron-builder --win --dir",
+    "build:win": "electron-builder --win --x64 --dir",
     "cert": "bash scripts/make-signing-cert.sh",
     "test:ui": "electron scripts/selftest/ui.js",
     "test:vision": "electron scripts/selftest/vision.js",
@@ -18,7 +18,9 @@
     "test:routing": "node scripts/selftest/routing.js",
     "test:anthropic": "node scripts/selftest/anthropic-shape.js",
     "test:perms": "electron scripts/selftest/perms.js",
-    "test:windows": "node scripts/selftest/windows.js"
+    "test:windows": "node scripts/selftest/windows.js",
+    "build:win:arm": "electron-builder --win --arm64 --dir",
+    "smoke": "electron scripts/selftest/smoke.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.0",

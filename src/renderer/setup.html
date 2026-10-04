@@ -9,6 +9,7 @@
     --line: #e4e6eb; --field: #f7f8fa; --accent: #2f6df6;
     --ok-bg: #e9f7ef; --ok-fg: #17663a;
     --err-bg: #fdecec; --err-fg: #a62020;
+    --warn-bg: #fff6e5; --warn-fg: #8a5a00;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -16,6 +17,7 @@
       --line: #2c3038; --field: #1e2128; --accent: #6b9bff;
       --ok-bg: #12301f; --ok-fg: #7ee0a5;
       --err-bg: #34191a; --err-fg: #ff9b9b;
+      --warn-bg: #352a12; --warn-fg: #f0c475;
     }
   }
   * { box-sizing: border-box; }
@@ -55,6 +57,9 @@
   }
   .banner.ok  { background: var(--ok-bg);  color: var(--ok-fg); }
   .banner.err { background: var(--err-bg); color: var(--err-fg); }
+  /* Something to do, but nothing is wrong — "restart to pick up the grant
+     you just gave" is not an error and should not be shouted in red. */
+  .banner.warn { background: var(--warn-bg); color: var(--warn-fg); }
   .resume-row { display: flex; align-items: center; gap: 12px; }
   .resume-status { color: var(--muted); font-size: 13px; }
   .resume-status.loaded { color: var(--ok-fg); font-weight: 600; }
@@ -73,9 +78,10 @@
   <div id="provider" class="banner">Checking your API key…</div>
 
   <div class="banner err" id="permBanner" style="display:none">
-    <strong>Screen Recording permission needed.</strong><br />
-    macOS provides system audio through screen recording, and it is also how
-    <em>Solve screen</em> reads your screen. You only have to do this once.
+    <strong id="permTitle">Screen Recording permission needed.</strong><br />
+    <span id="permWhy">macOS provides system audio through screen recording, and
+    it is also how <em>Solve screen</em> reads your screen. You only have to do
+    this once.</span>
     <div id="permSteps" style="margin-top:8px;display:none">
       System Settings → Privacy &amp; Security → Screen Recording → switch on
       <strong id="permAppName">Help Interview</strong>, then restart.<br />
